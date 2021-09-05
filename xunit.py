@@ -6,48 +6,34 @@
 
 # class定義 --------------------------------
 class TestCase:
-
   def __init__(self, name):
     self.name = name
-
   def setUp(self):
     pass # 未実行 (pass = Noneをreturnする)
-
+  def tearDown(self): # 空実装だが、これがないとエラーになる
+    pass
   # 自身のnameに応じたテストを実行する
   def run(self):
     self.setUp()
     method = getattr(self, self.name) # 自身のクラスのname属性を取得
     # テストが実行されると、method=自身のname("test....")であるため、method()にてそれがメソッドとして呼ばれるようになる
     method()
+    self.tearDown()
 
 class WasRun(TestCase): # TestCaseを継承
-
   def setUp(self):
-    self.wasRun = None # 未実行
-    self.wasSetUp = 1 # 準備済み
-
+    self.log = "setUp "
   def testMethod(self):
-    self.wasRun = 1 # 実行済み
+    self.log = self.log + "testMethod "
+  def tearDown(self):
+    self.log = self.log + "tearDown "
 
 class TestCaseTest(TestCase):
-
-  # テストオブジェクトを準備するフィクスチャ
-  def setUp(self):
-    self.test = WasRun("testMethod")
-
-  # テストが実行されたかどうか確認するテスト
-  def testRunning(self):
-    # テスト実行
-    self.test.run()
-    # 呼び出し後 : trueを期待
-    assert(self.test.wasRun)
-
   # テストの準備ができているか確認するテスト
-  def testSetUp(self):
-    # テスト実行
-    self.test.run()
-    assert(self.test.wasSetUp)
+  def testTemplateMethod(self):
+    test = WasRun("testMethod") # テストオブジェクト
+    test.run() # テスト実行
+    assert(test.log == "setUp testMethod tearDown ")
 
 # main() --------------------------------
-TestCaseTest("testRunning").run()
-TestCaseTest("testSetUp").run()
+TestCaseTest("testTemplateMethod").run()
