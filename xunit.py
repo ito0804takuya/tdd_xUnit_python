@@ -6,31 +6,48 @@
 
 # class定義 --------------------------------
 class TestCase:
+
   def __init__(self, name):
     self.name = name
-  # テストメソッドを実行
+
+  def setUp(self):
+    pass # 未実行 (pass = Noneをreturnする)
+
+  # 自身のnameに応じたテストを実行する
   def run(self):
+    self.setUp()
     method = getattr(self, self.name) # 自身のクラスのname属性を取得
+    # テストが実行されると、method=自身のname("test....")であるため、method()にてそれがメソッドとして呼ばれるようになる
     method()
 
 class WasRun(TestCase): # TestCaseを継承
-  def __init__(self, name):
-    self.wasRun = None # None = null(Rubyのnil)
-    super().__init__(name)
+
+  def setUp(self):
+    self.wasRun = None # 未実行
+    self.wasSetUp = 1 # 準備済み
+
   def testMethod(self):
-    self.wasRun = 1
+    self.wasRun = 1 # 実行済み
 
 class TestCaseTest(TestCase):
-  def testRunning(self):
-    # テストメソッドが呼ばれたらtrue, 呼ばれなければfalseを出力する
-    
-    # 呼び出し前 : falseを期待
-    test = WasRun("testMethod") # WasRunクラス, name = "testMethod"
-    assert(not test.wasRun)
 
+  # テストオブジェクトを準備するフィクスチャ
+  def setUp(self):
+    self.test = WasRun("testMethod")
+
+  # テストが実行されたかどうか確認するテスト
+  def testRunning(self):
+    # テスト実行
+    self.test.run()
     # 呼び出し後 : trueを期待
-    test.run()
-    assert(test.wasRun)
+    assert(self.test.wasRun)
+
+  # テストの準備ができているか確認するテスト
+  def testSetUp(self):
+    # テスト実行
+    self.test.run()
+    assert(self.test.wasSetUp)
 
 # main() --------------------------------
 TestCaseTest("testRunning").run()
+TestCaseTest("testSetUp").run()
