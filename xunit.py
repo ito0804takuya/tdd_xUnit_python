@@ -17,9 +17,12 @@ class TestCase:
     result = TestResult()
     result.testStarted()
     self.setUp()
-    method = getattr(self, self.name) # 自身のクラスのname属性を取得
-    # テストが実行されると、method=自身のname("test....")であるため、method()にてそれがメソッドとして呼ばれるようになる
-    method()
+    try:
+      method = getattr(self, self.name) # 自身のクラスのname属性を取得
+      # テストが実行されると、method=自身のname("test....")であるため、method()にてそれがメソッドとして呼ばれるようになる
+      method()
+    except:
+      result.testFailed()
     self.tearDown()
     return result
 
@@ -36,12 +39,13 @@ class WasRun(TestCase): # TestCaseを継承
 class TestResult:
   def __init__(self):
     self.runCount = 0
-  # テスト実行完了数
-  def testStarted(self):
+    self.errorCount = 0
+  def testStarted(self): # テスト実行完了数
     self.runCount += 1
-  # テスト実行結果
-  def summary(self):
-    return "%d run, 0 failed" % self.runCount
+  def testFailed(self): # テスト失敗数
+    self.errorCount += 1
+  def summary(self): # テスト実行結果
+    return "%d run, %d failed" % (self.runCount, self.errorCount)
 
 class TestCaseTest(TestCase):
   # テストの準備ができているか確認するテスト
@@ -59,9 +63,14 @@ class TestCaseTest(TestCase):
     test = WasRun("testBrokenMethod")
     result = test.run()
     assert(result.summary() == "1 run, 1 failed")
+  def testFailedResultFormatting(self):
+    result = TestResult()
+    result.testStarted()
+    result.testFailed()
+    assert(result.summary() == "1 run, 1 failed")
 
 # main() --------------------------------
-TestCaseTest("testTemplateMethod").run()
-TestCaseTest("testResult").run()
-# Todo: 例外をキャッチする
-# TestCaseTest("testFailedResult").run()
+print(TestCaseTest("testTemplateMethod").run().summary())
+print(TestCaseTest("testResult").run().summary())
+print(TestCaseTest("testFailedResult").run().summary())
+print(TestCaseTest("testFailedResultFormatting").run().summary())
